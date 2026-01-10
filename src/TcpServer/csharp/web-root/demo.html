@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostMessage Proxy Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e7f3ff;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+        .info p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PostMessage Proxy Demo</h1>
+        <p>This demo shows how multiple browser windows can communicate with each other using PostMessageProxy.</p>
+
+        <div class="info">
+            <h3>How to use:</h3>
+            <p>1. Click the buttons below to open client windows</p>
+            <p>2. Each client can send messages to other clients</p>
+            <p>3. Watch the console logs to see the communication</p>
+        </div>
+
+        <div class="button-group">
+            <button onclick="openClient('client-1.html')">Open Client 1</button>
+            <button onclick="openClient('client-2.html')">Open Client 2</button>
+            <button onclick="openClient('client-3.html')">Open Client 3</button>
+            <button onclick="openAll()" style="background-color: #28a745;">Open All Clients</button>
+        </div>
+    </div>
+
+    <script>
+        function openClient(clientUrl) {
+            window.open(clientUrl, '_blank', 'width=600,height=500');
+        }
+
+        function openAll() {
+            openClient('client-1.html');
+            setTimeout(() => openClient('client-2.html'), 300);
+            setTimeout(() => openClient('client-3.html'), 600);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client 3</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            margin-top: 0;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: none;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background-color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #00BCD4;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Client 3</h1>
+        <p>Send messages to other clients using PostMessageProxy</p>
+
+        <div class="controls">
+            <h3>Send Messages:</h3>
+            <div>
+                <input type="text" id="messageInput" placeholder="Enter message" value="Hello from Client 3!">
+            </div>
+            <div>
+                <button onclick="sendToClient('Client-1')">Send to Client 1</button>
+                <button onclick="sendToClient('Client-2')">Send to Client 2</button>
+                <button onclick="broadcastMessage()">Broadcast to All</button>
+                <button onclick="notifyReady()">Send Ready</button>
+            </div>
+        </div>
+
+        <h3>Message Log:</h3>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script src="scripts/promise-7.0.4.js"></script>
+    <script src="scripts/Tools.js"></script>
+    <script src="scripts/PostMessageProxy.js"></script>
+    <script>
+        var messageController = {
+            ReceiveMessage: function(message) {
+                log('Received message: ' + message, 'receive');
+                return 'Message received by Client 3';
+            },
+            Ping: function() {
+                log('Ping received', 'ping');
+                return 'Pong from Client 3';
+            },
+            ApplicationReady: function(clients) {
+                log('Application ready notification. Connected clients: ' + JSON.stringify(clients), 'system');
+            },
+            ApplicationLoaded: function(clients) {
+                log('Application loaded notification. Clients: ' + JSON.stringify(clients), 'system');
+            }
+        };
+
+        var proxy = new PostMessageProxy(
+            'Client-3',
+            messageController,
+            {
+                'Client-1': window.location.origin + '/client-1.html',
+                'Client-2': window.location.origin + '/client-2.html'
+            }
+        );
+
+        function log(message, type) {
+            var logDiv = document.getElementById('log');
+            var entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+            console.log('[Client-3]', message);
+        }
+
+        function sendToClient(clientName) {
+            var message = document.getElementById('messageInput').value;
+            log('Sending to ' + clientName + ': ' + message, 'send');
+
+            proxy.SendMessage(clientName, 'ReceiveMessage', [message])
+                .then(function(response) {
+                    log('Response from ' + clientName + ': ' + response, 'response');
+                })
+                .catch(function(error) {
+                    log('Error sending to ' + clientName + ': ' + error.message, 'error');
+                });
+        }
+
+        function broadcastMessage() {
+            sendToClient('Client-1');
+            sendToClient('Client-2');
+        }
+
+        function notifyReady() {
+            log('Sending ready notification', 'system');
+            proxy.SendReady();
+        }
+
+        window.addEventListener('load', function() {
+            log('Client 3 loaded and ready', 'system');
+        });
+    </script>
+</body>
+</html>
