@@ -16,6 +16,7 @@ public class Program
             new TimeServer(),
             new ChargenServer(),
             new HttpServer("./web-root"),
+            new PrinterServer(),
         };
         foreach (var service in services)
         {

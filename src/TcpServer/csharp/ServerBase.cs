@@ -11,6 +11,8 @@ namespace TcpServer;
 
 public abstract class ServerBase(IPAddress? ipAddress = default, ushort port = 65535) : IServerBase
 {
+    protected List<IDisposable> Disposables = [];
+
     protected IPAddress IPAddress { get; init; } = ipAddress ?? IPAddress.Any;
     protected ushort Port { get; init; } = port;
 
@@ -118,9 +120,12 @@ public abstract class ServerBase(IPAddress? ipAddress = default, ushort port = 6
                 Console.WriteLine($"{this.GetType()}::ServiceLoopAsync::Canceled: {clientId}-{Environment.CurrentManagedThreadId} ({ocex.Message})");
             }
         }
+        await ConnectionEndedAsync(clientId, accepted, cancellationToken);
     }
 
     protected abstract Task MessageReceivedAsync(int clientId, TcpClient accepted, ReadOnlyMemory<byte> message, CancellationToken cancellationToken);
+
+    protected virtual Task ConnectionEndedAsync(int clientId, TcpClient accepted, CancellationToken cancellationToken) => Task.CompletedTask;
 
     private CancellationTokenSource? _cts;
     private TcpListener? _listener;
@@ -147,6 +152,12 @@ public abstract class ServerBase(IPAddress? ipAddress = default, ushort port = 6
         foreach (var client in _clients)
         {
             client.Value.Dispose();
+            await Task.Yield();
+        }
+
+        foreach (var client in Disposables)
+        {
+            client.Dispose();
             await Task.Yield();
         }
 
